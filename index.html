@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShellScope</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --text-color: #E8E3C7;
+            --accent-color: #F5F5DC;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            line-height: 1.6;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.2s ease;
+        }
+
+        /* Layout */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            width: 100%;
+        }
+
+        /* Navbar */
+        nav {
+            padding: 2rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-weight: bold;
+            font-size: 1.25rem;
+            letter-spacing: -1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+            opacity: 0.8;
+            text-decoration: underline;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 6rem 0;
+            border-bottom: 1px solid rgba(232, 227, 199, 0.1);
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            line-height: 1.1;
+            margin-bottom: 1.5rem;
+            font-weight: normal;
+        }
+
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            opacity: 0.8;
+            max-width: 700px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            font-weight: bold;
+            border: 1px solid var(--accent-color);
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            background-color: #000;
+            color: var(--accent-color);
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: var(--accent-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--accent-color);
+            color: #000;
+        }
+
+        /* Features */
+        .features {
+            padding: 4rem 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+        }
+
+        .feature-item h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            border-bottom: 1px solid var(--accent-color);
+            display: inline-block;
+            padding-bottom: 0.25rem;
+        }
+
+        /* Tech Stack */
+        .tech-stack {
+            padding: 4rem 0;
+            text-align: center;
+            opacity: 0.7;
+            border-top: 1px solid rgba(232, 227, 199, 0.1);
+        }
+
+        /* Footer */
+        footer {
+            padding: 2rem 0;
+            text-align: center;
+            font-size: 0.875rem;
+            opacity: 0.5;
+            margin-top: auto;
+            border-top: 1px solid rgba(232, 227, 199, 0.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+
+            .nav-links {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="container">
+        <nav>
+            <div class="logo">ShellScope</div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#tech">Tech Stack</a>
+                <a href="https://github.com/shiks2/shellscope">GitHub</a>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <section class="hero">
+            <h1>The Windows Terminal Flight Recorder</h1>
+            <p>Capture transient process activity. Log command arguments. Store everything locally.</p>
+            <div class="cta-buttons">
+                <a href="https://github.com/shiks2/shellscope" class="btn btn-primary">View on GitHub</a>
+                <a href="#" class="btn btn-secondary">Download Alpha</a>
+            </div>
+        </section>
+
+        <section id="features" class="features">
+            <div class="feature-item">
+                <h3>Flash Capture</h3>
+                <p>Detects processes with lifespans under 100 milliseconds.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Deep Visibility</h3>
+                <p>Logs parent PIDs and full command line arguments.</p>
+            </div>
+            <div class="feature-item">
+                <h3>Offline First</h3>
+                <p>Zero cloud dependency. Data is stored in a local SQLite database.</p>
+            </div>
+        </section>
+
+        <section id="tech" class="tech-stack">
+            <p>Built with Flutter, Python WMI, and SQLite.</p>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 ShellScope. Released under MIT License.</p>
+        </div>
+    </footer>
+</body>
+</html>
