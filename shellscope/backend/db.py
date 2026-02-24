@@ -1,6 +1,7 @@
 import sqlite3
 import os
 import sys
+import threading
 from datetime import datetime, timedelta
 from typing import Any, List, Optional
 
@@ -8,6 +9,7 @@ class DatabaseHandler:
     def __init__(self, db_name: str = "shellscope.db") -> None:
         self.db_path = self._get_db_path(db_name)
         self.conn: Optional[sqlite3.Connection] = None
+        self.lock = threading.Lock()
         self.setup()
 
     def _get_db_path(self, db_name: str) -> str:
@@ -35,63 +37,65 @@ class DatabaseHandler:
 
     def setup(self) -> None:
         """Initialize DB with Lifecycle columns."""
-        try:
-            conn = self._get_connection()
-            cursor = conn.cursor()
+        with self.lock:
+            try:
+                conn = self._get_connection()
+                cursor = conn.cursor()
 
-            # Check for migration
-            cursor.execute(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='logs';"
-            )
-            table_exists = cursor.fetchone()
-
-            needs_migration = False
-            if table_exists:
-                cursor.execute("PRAGMA table_info(logs)")
-                columns = [info[1] for info in cursor.fetchall()]
-                if "duration" not in columns:
-                    needs_migration = True
-
-            if needs_migration:
-                sys.stderr.write("MIGRATION: Dropping old table to update schema.\n")
-                cursor.execute("DROP TABLE logs")
-
-            cursor.execute(
-                """
-                CREATE TABLE IF NOT EXISTS logs (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    pid INTEGER,
-                    date TEXT,
-                    time TEXT,
-                    child TEXT,
-                    parent TEXT,
-                    args TEXT,
-                    suspicious INTEGER,
-                    status TEXT,
-                    start_time_epoch REAL,
-                    end_time TEXT,
-                    duration REAL,
-                    is_running INTEGER DEFAULT 1
+                # Check for migration
+                cursor.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name='logs';"
                 )
-            """
-            )
-            conn.commit()
-            # Do not close the persistent connection here
-        except sqlite3.Error as e:
-            sys.stderr.write(f"DB SETUP ERROR: {e}\n")
+                table_exists = cursor.fetchone()
+
+                needs_migration = False
+                if table_exists:
+                    cursor.execute("PRAGMA table_info(logs)")
+                    columns = [info[1] for info in cursor.fetchall()]
+                    if "duration" not in columns:
+                        needs_migration = True
+
+                if needs_migration:
+                    sys.stderr.write("MIGRATION: Dropping old table to update schema.\n")
+                    cursor.execute("DROP TABLE logs")
+
+                cursor.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS logs (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        pid INTEGER,
+                        date TEXT,
+                        time TEXT,
+                        child TEXT,
+                        parent TEXT,
+                        args TEXT,
+                        suspicious INTEGER,
+                        status TEXT,
+                        start_time_epoch REAL,
+                        end_time TEXT,
+                        duration REAL,
+                        is_running INTEGER DEFAULT 1
+                    )
+                """
+                )
+                conn.commit()
+                # Do not close the persistent connection here
+            except sqlite3.Error as e:
+                sys.stderr.write(f"DB SETUP ERROR: {e}\n")
 
     def insert_log(self, log_obj: Any) -> None:
         """Inserts a single log entry."""
         try:
-            conn = self._get_connection()
-            with conn:
-                conn.execute(
-                    """
-                    INSERT INTO logs (pid, date, time, child, parent, args, suspicious, status, start_time_epoch, is_running)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    log_obj.to_tuple(),
-                )
+            with self.lock:
+                conn = self._get_connection()
+                with conn:
+                    conn.execute(
+                        """
+                        INSERT INTO logs (pid, date, time, child, parent, args, suspicious, status, start_time_epoch, is_running)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                        log_obj.to_tuple(),
+                    )
         except Exception as e:
             sys.stderr.write(f"DB INSERT ERROR: {e}\n")
 
@@ -100,32 +104,34 @@ class DatabaseHandler:
         if not log_objs:
             return
         try:
-            conn = self._get_connection()
             data = [log.to_tuple() for log in log_objs]
-            with conn:
-                conn.executemany(
-                    """
-                    INSERT INTO logs (pid, date, time, child, parent, args, suspicious, status, start_time_epoch, is_running)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    data,
-                )
+            with self.lock:
+                conn = self._get_connection()
+                with conn:
+                    conn.executemany(
+                        """
+                        INSERT INTO logs (pid, date, time, child, parent, args, suspicious, status, start_time_epoch, is_running)
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    """,
+                        data,
+                    )
         except Exception as e:
             sys.stderr.write(f"DB BATCH INSERT ERROR: {e}\n")
 
     def get_process_start_time(self, pid: int) -> float:
         """Retrieves the start time epoch for a running process."""
         try:
-            conn = self._get_connection()
-            # Optimization: Use indexed query (pid, is_running)
-            # We assume is_running=1 for active processes.
-            cursor = conn.execute(
-                "SELECT start_time_epoch FROM logs WHERE pid = ? AND is_running = 1 ORDER BY id DESC LIMIT 1",
-                (pid,),
-            )
-            row = cursor.fetchone()
-            if row:
-                return float(row[0])
+            with self.lock:
+                conn = self._get_connection()
+                # Optimization: Use indexed query (pid, is_running)
+                # We assume is_running=1 for active processes.
+                cursor = conn.execute(
+                    "SELECT start_time_epoch FROM logs WHERE pid = ? AND is_running = 1 ORDER BY id DESC LIMIT 1",
+                    (pid,),
+                )
+                row = cursor.fetchone()
+                if row:
+                    return float(row[0])
         except Exception as e:
             sys.stderr.write(f"DB GET START TIME ERROR: {e}\n")
         return 0.0
@@ -133,30 +139,32 @@ class DatabaseHandler:
     def update_log_duration(self, pid: int, end_time_str: str, duration: float) -> None:
         """Updates a process entry when it stops."""
         try:
-            conn = self._get_connection()
-            with conn:
-                cursor = conn.execute(
-                    """
-                    UPDATE logs
-                    SET is_running = 0, end_time = ?, duration = ?
-                    WHERE pid = ? AND is_running = 1
-                """,
-                    (end_time_str, duration, pid),
-                )
-                if cursor.rowcount == 0:
-                    pass
+            with self.lock:
+                conn = self._get_connection()
+                with conn:
+                    cursor = conn.execute(
+                        """
+                        UPDATE logs
+                        SET is_running = 0, end_time = ?, duration = ?
+                        WHERE pid = ? AND is_running = 1
+                    """,
+                        (end_time_str, duration, pid),
+                    )
+                    if cursor.rowcount == 0:
+                        pass
         except Exception as e:
             sys.stderr.write(f"DB UPDATE ERROR: {e}\n")
 
     def prune_old_logs(self, days_to_keep: int = 7) -> None:
         try:
-            conn = self._get_connection()
             cutoff_date = (datetime.now() - timedelta(days=days_to_keep)).strftime(
                 "%Y-%m-%d"
             )
-            with conn:
-                cursor = conn.execute("DELETE FROM logs WHERE date < ?", (cutoff_date,))
-                count = cursor.rowcount
+            with self.lock:
+                conn = self._get_connection()
+                with conn:
+                    cursor = conn.execute("DELETE FROM logs WHERE date < ?", (cutoff_date,))
+                    count = cursor.rowcount
             if count > 0:
                 sys.stderr.write(f"MAINTENANCE: Pruned {count} old logs.\n")
         except Exception as e:
@@ -164,9 +172,10 @@ class DatabaseHandler:
 
     def close(self) -> None:
         """Closes the persistent connection."""
-        if self.conn:
-            try:
-                self.conn.close()
-            except Exception:
-                pass
-            self.conn = None
+        with self.lock:
+            if self.conn:
+                try:
+                    self.conn.close()
+                except Exception:
+                    pass
+                self.conn = None
