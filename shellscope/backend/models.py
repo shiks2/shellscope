@@ -1,5 +1,5 @@
 import time
-from typing import Tuple, Any
+from typing import Tuple, Any, List, Optional
 
 class ProcessLog:
     def __init__(self, pid: int, child: str, parent: str, args: str, suspicious: bool, status: str = "NEW", is_running: bool = True):
@@ -21,7 +21,7 @@ class ProcessLog:
         return f"[{self.timestamp}] {self.parent} -> {self.child} (PID: {self.pid})"
 
     @classmethod
-    def from_wmi_process(cls, process: Any, parent_name: str, status: str = "NEW", suspicious_keywords: list = None) -> 'ProcessLog':
+    def from_wmi_process(cls, process: Any, parent_name: str, status: str = "NEW", suspicious_keywords: Optional[List[str]] = None) -> 'ProcessLog':
         if suspicious_keywords is None:
             suspicious_keywords = []
 

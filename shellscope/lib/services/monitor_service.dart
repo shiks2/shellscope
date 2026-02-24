@@ -30,41 +30,51 @@ class MonitorService {
       );
 
       // Run python script directly for dev/real-time updates
-      // Using 'python' or 'python3' depends on system. process.start searches PATH.
-      _process = await Process.start('python', [AppConstants.pythonScriptPath]);
+      // Using 'python' as default. Ensure python is in PATH.
+      String pythonCommand = 'python';
+
+      _process = await Process.start(pythonCommand, [AppConstants.pythonScriptPath]);
 
       isRunning.value = true;
       GetIt.instance<MyLogger>().logInfo(
         "Backend started with PID: ${_process!.pid}",
       );
 
-      // Listen to stdout for real-time events
-      _process!.stdout.transform(const SystemEncoding().decoder).listen((data) {
-        // Print raw stdout to console for debugging
-        print("PYTHON_STDOUT: $data");
+      // Listen to stdout for real-time events with correct line splitting
+      _process!.stdout
+          .transform(const SystemEncoding().decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
 
-        final lines = data.split('\n');
-        for (var line in lines) {
-          line = line.trim();
-          if (line.isNotEmpty) {
-            GetIt.instance<MyLogger>().logInfo("PYTHON: $line");
-          }
-          if (line.startsWith("LOG::")) {
-            try {
-              final jsonStr = line.substring(5);
-              final payload = jsonDecode(jsonStr) as Map<String, dynamic>;
-              GetIt.instance<DatabaseService>().processRealTimeLog(payload);
-            } catch (e) {
-              GetIt.instance<MyLogger>().logError("Failed to parse log: $e");
-            }
+        line = line.trim();
+        if (line.isEmpty) return;
+
+        // Log everything from python for debugging (except raw JSON maybe)
+        if (!line.startsWith("LOG::")) {
+             GetIt.instance<MyLogger>().logInfo("PYTHON: $line");
+        }
+
+        if (line.startsWith("LOG::")) {
+          try {
+            final jsonStr = line.substring(5);
+            final payload = jsonDecode(jsonStr) as Map<String, dynamic>;
+            GetIt.instance<DatabaseService>().processRealTimeLog(payload);
+          } catch (e) {
+            GetIt.instance<MyLogger>().logError("Failed to parse log: $e\nLine: $line");
           }
         }
+      }, onError: (e) {
+          GetIt.instance<MyLogger>().logError("Stdout error: $e");
       });
 
       // Listen to stderr for errors
-      _process!.stderr.transform(const SystemEncoding().decoder).listen((data) {
-        print("PYTHON_STDERR: $data");
-        GetIt.instance<MyLogger>().logError("PYTHON_ERR: $data");
+      _process!.stderr
+          .transform(const SystemEncoding().decoder)
+          .transform(const LineSplitter())
+          .listen((line) {
+        if (line.isNotEmpty) {
+             GetIt.instance<MyLogger>().logError("PYTHON_ERR: $line");
+        }
       });
 
       // Listen for exit
