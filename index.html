@@ -41,6 +41,11 @@
             >Features</a
           >
           <a
+            href="#users"
+            class="cursor-pointer transition-colors duration-200 hover:text-indigo-500"
+            >Users</a
+          >
+          <a
             href="#installation"
             class="cursor-pointer transition-colors duration-200 hover:text-indigo-500"
             >Install</a
@@ -175,6 +180,29 @@
         </div>
       </section>
 
+      <section id="users" class="px-6 py-20">
+        <div class="mx-auto w-full max-w-7xl">
+          <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Users &amp; Use Cases</h2>
+          <div class="mt-10 grid gap-6 md:grid-cols-3">
+            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Paranoid Developers / SecOps</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Catch malware scripts or debugging flashes ProcMon misses.</p>
+              <p class="mt-3 text-sm text-slate-700 dark:text-slate-300">Use case: forensic replay of exact command lines and parent processes.</p>
+            </article>
+            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">SMB IT Admins</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Monitor employee machines for suspicious <code>-enc</code> PowerShell behavior.</p>
+              <p class="mt-3 text-sm text-slate-700 dark:text-slate-300">Use case: compliance logging with local SQLite exports for air-gapped audits.</p>
+            </article>
+            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
+              <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-100">Non-Tech Home Users</h3>
+              <p class="mt-3 text-sm leading-relaxed text-slate-700 dark:text-slate-300">Spot random CMD/PowerShell popups from miners or persistence scripts.</p>
+              <p class="mt-3 text-sm text-slate-700 dark:text-slate-300">Use case: real-time alerts with suspicious commands highlighted in red.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section id="installation" class="px-6 py-20">
         <div class="mx-auto grid w-full max-w-7xl gap-8 lg:grid-cols-2">
           <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
@@ -199,22 +227,43 @@
       <section id="roadmap" class="px-6 py-20">
         <div class="mx-auto w-full max-w-7xl">
           <h2 class="text-3xl font-bold text-slate-900 dark:text-slate-100">Roadmap</h2>
-          <div class="mt-10 grid gap-6 md:grid-cols-3">
-            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
-              <p class="text-sm font-semibold uppercase tracking-wide text-indigo-500">Next</p>
-              <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">Linux Support</h3>
-              <p class="mt-3 text-slate-700 dark:text-slate-300">via Netlink.</p>
-            </article>
-            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
-              <p class="text-sm font-semibold uppercase tracking-wide text-indigo-500">Planned</p>
-              <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">macOS Support</h3>
-              <p class="mt-3 text-slate-700 dark:text-slate-300">via Endpoint Security/psutil.</p>
-            </article>
-            <article class="cursor-pointer rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm transition-colors duration-200 hover:border-indigo-400 dark:border-slate-700 dark:bg-slate-800/80">
-              <p class="text-sm font-semibold uppercase tracking-wide text-indigo-500">Research</p>
-              <h3 class="mt-2 text-xl font-semibold text-slate-900 dark:text-slate-100">ETW Integration</h3>
-              <p class="mt-3 text-slate-700 dark:text-slate-300">for lower latency.</p>
-            </article>
+          <div class="mt-10 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 shadow-glow dark:border-slate-700 dark:bg-slate-800/80">
+            <table class="min-w-full divide-y divide-gray-200 text-left text-sm dark:divide-slate-700">
+              <thead class="bg-gray-100/70 dark:bg-slate-900/60">
+                <tr class="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-300">
+                  <th class="px-5 py-3 font-semibold">Phase</th>
+                  <th class="px-5 py-3 font-semibold">Feature</th>
+                  <th class="px-5 py-3 font-semibold">Timeline</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-200 text-slate-800 dark:divide-slate-700 dark:text-slate-200">
+                <tr>
+                  <td class="px-5 py-4 font-semibold">MVP (Now)</td>
+                  <td class="px-5 py-4">Windows WMI capture, Flutter UI, SQLite</td>
+                  <td class="px-5 py-4">Live</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-semibold">v1.1</td>
+                  <td class="px-5 py-4">Linux (Netlink), macOS (psutil/Endpoint Security)</td>
+                  <td class="px-5 py-4">Q2 2026</td>
+                </tr>
+                <tr class="bg-emerald-50/70 dark:bg-emerald-950/20">
+                  <td class="px-5 py-4 font-semibold text-emerald-700 dark:text-emerald-300">v2.0 Pro</td>
+                  <td class="px-5 py-4"><span class="font-semibold text-emerald-700 dark:text-emerald-300">Webhook Logs:</span> Send logs to YOUR server via webhook (JSON/SQLite, auth tokens, batching).</td>
+                  <td class="px-5 py-4">Q3 2026</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-semibold">v2.1</td>
+                  <td class="px-5 py-4">ETW low-latency, Supabase pro sync (login/export)</td>
+                  <td class="px-5 py-4">Q4 2026</td>
+                </tr>
+                <tr>
+                  <td class="px-5 py-4 font-semibold">Future</td>
+                  <td class="px-5 py-4">Enterprise: central dashboard, anomaly ML</td>
+                  <td class="px-5 py-4">2027</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
