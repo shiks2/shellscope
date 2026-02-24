@@ -81,9 +81,6 @@ class _MonitorScreenState extends State<MonitorScreen> {
   void _startMonitoring() {
     final dbService = GetIt.instance<DatabaseService>();
 
-    // Initial fetch to populate UI immediately
-    _refreshLogs();
-
     // Subscribe to real-time updates from MonitorService -> DatabaseService
     _logSubscription = dbService.logStream.listen((logs) {
       if (mounted) {
@@ -93,9 +90,12 @@ class _MonitorScreenState extends State<MonitorScreen> {
       }
     });
 
-    // Keep polling as backup (e.g. if python script crashes or for deep history refresh)
-    // but maybe less frequent? keeping 2s for now is fine.
-    _timer = Timer.periodic(const Duration(seconds: 2), (timer) {
+    // Initial fetch to populate UI immediately
+    // This will trigger the stream above
+    _refreshLogs();
+
+    // Keep polling as backup but less frequent (10s)
+    _timer = Timer.periodic(const Duration(seconds: 10), (timer) {
       _refreshLogs();
     });
   }
@@ -112,12 +112,8 @@ class _MonitorScreenState extends State<MonitorScreen> {
 
   Future<void> _refreshLogs() async {
     final dbService = GetIt.instance<DatabaseService>();
-    final logs = await dbService.getLogs();
-    if (mounted) {
-      setState(() {
-        _logs = logs;
-      });
-    }
+    // calling getLogs() will update the stream, which updates the UI
+    await dbService.getLogs();
   }
 
   @override
