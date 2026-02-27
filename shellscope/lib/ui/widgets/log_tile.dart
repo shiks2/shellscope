@@ -19,20 +19,24 @@ class LogTile extends StatelessWidget {
       indicatorColor = Colors.grey;
     }
 
-    return GestureDetector(
-      onTap: () => _showDetails(context),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 1),
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          border: Border(left: BorderSide(color: indicatorColor, width: 4)),
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 0, vertical: 1),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        border: Border(left: BorderSide(color: indicatorColor, width: 4)),
+      ),
+      child: Theme(
+        data: Theme.of(context).copyWith(
+          dividerColor: Colors.transparent,
+          splashColor: Colors.transparent,
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+        child: ExpansionTile(
+          tilePadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
@@ -67,125 +71,103 @@ class LogTile extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4), // Added a SizedBox for spacing
                   Text(
-                    log.child,
+                    log.time,
                     style: GoogleFonts.inter(
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                      fontSize: 14,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    log.args,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.jetBrainsMono(
-                      color: Colors.white.withValues(alpha: 0.5),
+                      color: Colors.white.withOpacity(0.3),
                       fontSize: 12,
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              log.time,
-              style: GoogleFonts.inter(
-                color: Colors.white.withValues(alpha: 0.3),
-                fontSize: 12,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showDetails(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xFF1E1E1E),
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-      ),
-      builder: (context) {
-        return Padding(
-          padding: const EdgeInsets.all(AppConstants.defaultPadding),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+              const SizedBox(height: 4),
               Text(
-                "Process Details",
+                log.child,
                 style: GoogleFonts.inter(
-                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
+                  fontSize: 14,
                 ),
               ),
-              const SizedBox(height: 16),
-              _buildDetailRow("Parent Process", log.parent),
-              const SizedBox(height: 8),
-              _buildDetailRow("Child Process", log.child),
-              const SizedBox(height: 16),
+              const SizedBox(height: 2),
               Text(
-                "Arguments:",
-                style: GoogleFonts.inter(color: Colors.white70),
-              ),
-              const SizedBox(height: 4),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.black26,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: SelectableText(
-                  log.args,
-                  style: GoogleFonts.jetBrainsMono(
-                    fontSize: 13,
-                    color: const Color(0xFF00E5FF),
-                  ),
+                log.args,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.jetBrainsMono(
+                  color: Colors.white.withOpacity(0.5),
+                  fontSize: 12,
                 ),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton.icon(
+            ],
+          ),
+          childrenPadding: EdgeInsets.fromLTRB(
+            AppConstants.defaultPadding,
+            0,
+            AppConstants.defaultPadding,
+            AppConstants.defaultPadding,
+          ),
+          expandedCrossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildDetailRow("Parent Process", log.parent),
+            const SizedBox(height: 8),
+            _buildDetailRow("Child Process", log.child),
+            const SizedBox(height: 16),
+            Text("Arguments:", style: GoogleFonts.inter(color: Colors.white70)),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                log.args,
+                style: GoogleFonts.jetBrainsMono(
+                  fontSize: 13,
+                  color: const Color(0xFF00E5FF),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton.icon(
                   onPressed: () {
                     Clipboard.setData(ClipboardData(text: log.args));
-                    Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text("Arguments copied to clipboard"),
                       ),
                     );
                   },
-                  icon: const Icon(Icons.copy),
+                  icon: const Icon(Icons.copy, size: 18),
                   label: const Text("Copy Arguments"),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF252526),
                     foregroundColor: Colors.white,
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Center(
-                child: TextButton.icon(
+                const SizedBox(width: 16),
+                TextButton.icon(
                   onPressed: () => _searchOnline(context),
-                  icon: const Icon(Icons.search, color: Color(0xFF00E5FF)),
+                  icon: const Icon(
+                    Icons.search,
+                    size: 18,
+                    color: Color(0xFF00E5FF),
+                  ),
                   label: Text(
                     "Search Online",
                     style: GoogleFonts.inter(color: const Color(0xFF00E5FF)),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

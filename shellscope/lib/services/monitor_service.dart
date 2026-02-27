@@ -26,12 +26,12 @@ class MonitorService {
   void _spawnProcess() async {
     try {
       GetIt.instance<MyLogger>().logInfo(
-        "Starting backend process: python ${AppConstants.pythonScriptPath}",
+        "Starting backend process: python ${AppConstants.monitorExePath}",
       );
 
       // Run python script directly for dev/real-time updates
       // Using 'python' or 'python3' depends on system. process.start searches PATH.
-      _process = await Process.start('python', [AppConstants.pythonScriptPath]);
+      _process = await Process.start(AppConstants.monitorExePath, []);
 
       isRunning.value = true;
       GetIt.instance<MyLogger>().logInfo(
